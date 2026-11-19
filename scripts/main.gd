@@ -107,9 +107,8 @@ func _build_fighters() -> void:
 	_add_box_child(player, "CrimsonMantle", Vector3(0, 1.35, -0.05), Vector3(0.95, 0.34, 0.55), Color(0.22, 0.035, 0.045))
 	_add_box_child(player, "Katana", Vector3(0.55, 1.0, -0.42), Vector3(0.075, 0.075, 1.2), Color(0.65, 0.76, 0.86))
 
-	boss = CharacterBody3D.new()
+	boss = KuroBoss.new()
 	boss.name = "Kuro"
-	boss.set_script(BOSS_SCRIPT)
 	boss.position = Vector3(0, 0.12, -5)
 	boss.set("player", player)
 	add_child(boss)
