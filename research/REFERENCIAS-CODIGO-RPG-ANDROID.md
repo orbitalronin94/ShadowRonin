@@ -290,3 +290,73 @@ La meta no es ensamblar fragmentos ajenos. Vamos a extraer patrones, comparar al
 - Producción visual: pipeline de personajes, retargeting, importación de animaciones, LOD, atlas y compresión.
 
 La siguiente actualización debe seguir incorporando archivos concretos y hallazgos contrastados a este único documento. No abrir todavía carpetas de código, elegir motor ni iniciar un prototipo.
+
+---
+
+## 10. Tercera ronda: acción 3D, locomoción, cámara y Android
+
+### Breadbin Engine — framework 3D de combate y movesets
+
+- Repositorio: https://github.com/CornflakeWoof/BreadbinEngine
+- [PlayerBase.gd — movimiento, root motion y estados de acción](https://github.com/CornflakeWoof/BreadbinEngine/blob/main/Scripts/Actors/PlayerBase.gd)
+- [ActorBase.gd — base común de actores](https://github.com/CornflakeWoof/BreadbinEngine/blob/main/Scripts/Actors/ActorBase.gd)
+- [Weapon_Base.gd — movesets, audio y perfiles de arma](https://github.com/CornflakeWoof/BreadbinEngine/blob/main/Scripts/Combat/Weapon_Base.gd)
+- [Hitbox_Damage.gd — colisión de daño y equipos](https://github.com/CornflakeWoof/BreadbinEngine/blob/main/Scripts/Combat/Hitbox_Damage.gd)
+- [PlayerCamera.gd — cámara relativa al personaje](https://github.com/CornflakeWoof/BreadbinEngine/blob/main/Scripts/Actors/PlayerCamera.gd)
+- **Observación:** cada arma expone listas de animaciones para cadenas de ataques ligeros/pesados, ataques en carrera o caída, y variantes críticas. También define sonidos, tipos de daño y hitboxes. El controlador del jugador suma el desplazamiento de root motion al movimiento horizontal.
+- **Ideas aprovechables:** movesets configurables por arma; separación actor/arma/hitbox; ataques contextuales; root motion como parte de la locomoción; cámara que sigue la orientación del personaje.
+- **Qué revisar críticamente:** el proyecto acredita que parte de su controlador procede de otro trabajo; hay código antiguo y algunos patrones de referencias por jerarquía que conviene modernizar. No asumir que todas las funciones están completas o libres de errores.
+- **Estado:** framework/prototipo de acción 3D, no RPG terminado.
+- **Licencia:** MIT en [LICENSE](https://github.com/CornflakeWoof/BreadbinEngine/blob/main/LICENSE). Respetar también créditos y licencias de dependencias/assets.
+
+### Locomotion Godot — root motion, blending e IK de pies
+
+- Repositorio: https://github.com/Johnz86/locomotion-godot
+- [README — objetivos y límites de la demo](https://github.com/Johnz86/locomotion-godot/blob/main/README.md)
+- [player_root_motion.gd — locomoción, combos y acciones completas](https://github.com/Johnz86/locomotion-godot/blob/main/src/character/player_root_motion.gd)
+- [foot_placement_ik.gd — IK de pies y adaptación al terreno](https://github.com/Johnz86/locomotion-godot/blob/main/src/character/foot_placement_ik.gd)
+- [gait_profiles.gd — perfiles de marcha y fase de zancada](https://github.com/Johnz86/locomotion-godot/blob/main/src/character/gait_profiles.gd)
+- [educational_guide.md — guía matemática y decisiones](https://github.com/Johnz86/locomotion-godot/blob/main/docs/educational_guide.md)
+- [tests/run.gd — runner de validación](https://github.com/Johnz86/locomotion-godot/blob/main/tests/run.gd)
+- **Observación:** combina locomoción por root motion, estados de movimiento libre/strafe/herido, ataques de cuerpo completo, combos almacenados, guardia, esquivas y knockback. El modificador IK adapta pies y pelvis a pendientes y escalones, con límites para no arrastrar el pie plantado.
+- **Ideas aprovechables:** locomoción y acciones animadas coordinadas; transiciones de ataque con buffer; separar gait profiles e IK del controlador; pruebas para velocidad, frenada, roll y comportamiento en escaleras.
+- **Límite esencial:** el README declara expresamente que es una demo educativa, no un juego de combate completo: no implementa daño de armas ni lock-on. Es una referencia de animación/locomoción, no una solución de combate.
+- **Licencia:** no encontré LICENSE en la raíz consultada. No copiar código ni assets hasta aclarar permisos. Los assets de animación tienen atribución específica en el README.
+
+### Dungeon Raid — juego 3D de acción y sigilo con niveles
+
+- Repositorio: https://github.com/parthoghosh24/Dungeon-Raid
+- [skelly_boss.gd — jefe, ataques y fases por salud](https://github.com/parthoghosh24/Dungeon-Raid/blob/main/Scripts/Monsters/skelly_boss.gd)
+- [skelly_minion.gd — patrulla, percepción y persecución](https://github.com/parthoghosh24/Dungeon-Raid/blob/main/Scripts/Monsters/skelly_minion.gd)
+- [CameraOrigin.gd — cámara de ratón y mando](https://github.com/parthoghosh24/Dungeon-Raid/blob/main/Scripts/CameraOrigin.gd)
+- [Scenes/Levels — cinco niveles](https://github.com/parthoghosh24/Dungeon-Raid/tree/main/Scenes/Levels)
+- **Observación:** juego 3D de acción/sigilo con varios niveles, enemigos, jefe, escenas y objetos. El jefe usa AnimationTree y timers; los minions combinan estados de patrulla/persecución/ataque, NavigationAgent3D, áreas de detección y raycast de visión.
+- **Ideas aprovechables:** mezcla de sigilo y combate abierto; navegación de enemigos; raycast de línea de visión; estructura de niveles; uso de AnimationTree para enemigos y jefe.
+- **Qué rediseñaríamos:** la lógica del jefe mezcla timers, animación y aplicación de daño; los estados de enemigos tienen esperas y condiciones difíciles de razonar. Nos sirve como inventario de sistemas y juego terminado, pero no copiaríamos su organización tal cual.
+- **Estado:** juego de acción/sigilo publicado y código abierto, no RPG profundo ni referencia visual de gama alta.
+- **Licencia:** MIT en [LICENSE](https://github.com/parthoghosh24/Dungeon-Raid/blob/main/LICENSE). Sus assets se describen como procedentes de packs abiertos; verificar la licencia concreta de cada recurso.
+
+### Tactical Slash — adaptación 3D y flujo táctil Android
+
+- Repositorio: https://github.com/sion-rgb/tactical-slash
+- [README — APK Android y renderer Compatibility](https://github.com/sion-rgb/tactical-slash)
+- [architecture.md — sistemas desacoplados y estado autoritativo](https://github.com/sion-rgb/tactical-slash/blob/main/docs/architecture.md)
+- [camera_controller.gd — foco, zoom, giro y vibración](https://github.com/sion-rgb/tactical-slash/blob/main/scripts/camera/camera_controller.gd)
+- [battle_manager.gd — coordinación por señales](https://github.com/sion-rgb/tactical-slash/blob/main/scripts/battle/battle_manager.gd)
+- [hit_effect.gd — chispas de impacto](https://github.com/sion-rgb/tactical-slash/blob/main/scripts/effects/hit_effect.gd)
+- [THIRD_PARTY_ASSETS.md — auditoría de recursos](https://github.com/sion-rgb/tactical-slash/blob/main/THIRD_PARTY_ASSETS.md)
+- **Observación:** el README ofrece APK Android y usa Godot 4.7 con renderer Compatibility. La arquitectura mantiene una fuente de verdad lógica para las unidades y delega cámara, movimiento, acciones, IA y UI a sistemas especializados. El controlador de cámara admite foco, zoom, paneo, rotación y vibración; los gestos táctiles forman parte de la interfaz.
+- **Ideas aprovechables:** comprobar un pipeline 3D con destino Android; separar estado lógico de transformaciones visuales; cámara controlable por gestos; coordinación mediante señales; auditoría explícita de assets.
+- **Límite:** es un RPG táctico por turnos sobre cuadrícula, no un action RPG. Que exista APK no prueba FPS, temperatura o estabilidad en una gama amplia de dispositivos.
+- **Licencia:** código MIT; modelos, entorno y audio tienen licencias propias descritas en THIRD_PARTY_ASSETS.md.
+
+### Breadbin + Locomotion + Grim Delver: combinación conceptual
+
+Estas tres referencias cubren capas distintas que no debemos confundir:
+
+- **Breadbin:** configuración de movesets y relación entre arma, animación y hitboxes.
+- **Locomotion Godot:** calidad de movimiento corporal, root motion, mezcla de animaciones e IK.
+- **Grim Delver:** determinismo del combate y separación entre simulación y feedback.
+
+Una arquitectura propia podría estudiar las tres sin adoptar su implementación literal. El resultado tendría que ser una única definición de ataque que coordine animación, desplazamiento, hitbox, cancelaciones y eventos audiovisuales.
+
