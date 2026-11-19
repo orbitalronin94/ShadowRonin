@@ -241,7 +241,7 @@ func _touch_button(parent: Control, caption: String, offset: Vector2, dimensions
 	button.position = offset
 	button.add_theme_font_size_override("font_size", 16)
 	button.modulate = Color(1, 1, 1, 0.82)
-	button.pressed.connect(down)
+	button.button_down.connect(down)
 	if up.is_valid():
 		button.button_up.connect(up)
 	parent.add_child(button)
