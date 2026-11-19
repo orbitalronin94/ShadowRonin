@@ -5,9 +5,11 @@ signal health_changed(current: int, maximum: int)
 signal telegraph_started(center: Vector3, radius: float)
 signal attack_resolved(hit: bool)
 signal defeated
+signal phase_changed
 
 enum State { APPROACH, WINDUP, STRIKE, RECOVERY, DEAD }
 @export var max_health := 360
+@export var attack_damage := 18
 var health := 360
 var player: RoninController
 var active := false
@@ -16,6 +18,7 @@ var timer := 0.0
 var cooldown := 1.0
 var strike_center := Vector3.ZERO
 var strike_radius := 3.35
+var phase_two := false
 
 func _ready() -> void:
 	health = max_health
@@ -36,8 +39,9 @@ func _physics_process(delta: float) -> void:
 		State.APPROACH:
 			if distance > 2.8:
 				var dir := offset.normalized()
-				velocity.x = dir.x * 2.4
-				velocity.z = dir.z * 2.4
+				var speed := 3.35 if phase_two else 2.4
+				velocity.x = dir.x * speed
+				velocity.z = dir.z * speed
 				look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
 			else:
 				velocity.x = move_toward(velocity.x, 0.0, 12.0 * delta)
@@ -50,14 +54,14 @@ func _physics_process(delta: float) -> void:
 		State.WINDUP:
 			velocity.x = move_toward(velocity.x, 0.0, 18.0 * delta)
 			velocity.z = move_toward(velocity.z, 0.0, 18.0 * delta)
-			if timer >= 0.82:
+			if timer >= (0.62 if phase_two else 0.82):
 				state = State.STRIKE
 				timer = 0.0
 				var d := player.global_position - strike_center
 				d.y = 0.0
 				var hit := d.length() <= strike_radius
 				if hit:
-					player.take_damage(18, global_position)
+					player.take_damage(attack_damage, global_position)
 				attack_resolved.emit(hit)
 		State.STRIKE:
 			if timer >= 0.18:
@@ -76,6 +80,12 @@ func take_damage(amount: int, source: Vector3) -> void:
 		return
 	health = maxi(0, health - amount)
 	health_changed.emit(health, max_health)
+	if not phase_two and health <= int(max_health * 0.5):
+		phase_two = true
+		strike_radius = 4.15
+		attack_damage = 22
+		cooldown = 0.25
+		phase_changed.emit()
 	var push := global_position - source
 	push.y = 0.0
 	if push.length() > 0.01:
