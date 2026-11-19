@@ -13,6 +13,8 @@ var attack_cooldown := 0.0
 var dodge_left := 0.0
 var touch_axis := Vector2.ZERO
 var controls_enabled := false
+var lock_target: Node3D
+var lock_on := false
 var last_direction := Vector3.FORWARD
 
 func _ready() -> void:
@@ -39,6 +41,9 @@ func _physics_process(delta: float) -> void:
 		direction = (right.normalized() * axis.x - forward.normalized() * axis.y).normalized()
 	if direction.length() > 0.1:
 		last_direction = direction
+	if lock_on and is_instance_valid(lock_target):
+		look_at(Vector3(lock_target.global_position.x, global_position.y, lock_target.global_position.z), Vector3.UP)
+	elif direction.length() > 0.1:
 		look_at(global_position + direction, Vector3.UP)
 	if dodge_left > 0.0:
 		velocity.x = last_direction.x * 12.0
@@ -52,6 +57,11 @@ func _physics_process(delta: float) -> void:
 		perform_attack()
 	if Input.is_action_just_pressed("dodge"):
 		perform_dodge()
+	if Input.is_action_just_pressed("lock_on"):
+		lock_on = not lock_on
+
+func set_lock_target(target: Node3D) -> void:
+	lock_target = target
 
 func enable_controls() -> void:
 	controls_enabled = true
