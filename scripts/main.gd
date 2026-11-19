@@ -114,15 +114,21 @@ func _build_fighters() -> void:
 	boss.set("player", player)
 	add_child(boss)
 	var bc := CapsuleShape3D.new()
-	bc.radius = 0.95
-	bc.height = 3.4
-	_add_collision(boss, bc, 1.7)
-	_add_capsule(boss, Vector3(0, 1.55, 0), 0.95, 2.6, Color(0.09, 0.022, 0.03))
-	_add_sphere(boss, "DemonSkull", Vector3(0, 2.95, -0.2), 0.8, Color(0.14, 0.025, 0.035))
-	_add_horn(boss, "HornLeft", Vector3(-0.58, 3.55, -0.2))
-	_add_horn(boss, "HornRight", Vector3(0.58, 3.55, -0.2))
-	_add_sphere(boss, "EyeLeft", Vector3(-0.3, 3.0, -0.9), 0.11, Color(1, 0.025, 0.005), true)
-	_add_sphere(boss, "EyeRight", Vector3(0.3, 3.0, -0.9), 0.11, Color(1, 0.025, 0.005), true)
+	bc.radius = 0.82
+	bc.height = 2.25
+	_add_collision(boss, bc, 1.12)
+	# Kuro is a low, heavy hound silhouette rather than a humanoid placeholder.
+	_add_capsule(boss, Vector3(0, 1.12, 0.05), 0.72, 2.45, Color(0.075, 0.018, 0.028), Vector3(90, 0, 0))
+	_add_sphere(boss, "DemonSkull", Vector3(0, 1.38, -1.02), 0.64, Color(0.14, 0.025, 0.035))
+	_add_box_child(boss, "Muzzle", Vector3(0, 1.08, -1.62), Vector3(0.72, 0.48, 0.82), Color(0.095, 0.018, 0.025))
+	_add_horn(boss, "HornLeft", Vector3(-0.43, 1.88, -1.0))
+	_add_horn(boss, "HornRight", Vector3(0.43, 1.88, -1.0))
+	_add_sphere(boss, "EyeLeft", Vector3(-0.28, 1.48, -1.57), 0.105, Color(1, 0.025, 0.005), true)
+	_add_sphere(boss, "EyeRight", Vector3(0.28, 1.48, -1.57), 0.105, Color(1, 0.025, 0.005), true)
+	for leg_x in [-0.52, 0.52]:
+		for leg_z in [-0.72, 0.72]:
+			_add_capsule(boss, Vector3(leg_x, 0.52, leg_z), 0.22, 0.92, Color(0.055, 0.014, 0.022))
+	_add_capsule(boss, Vector3(0, 1.12, 1.2), 0.15, 1.05, Color(0.065, 0.014, 0.022), Vector3(65, 0, 0))
 
 	player.attack_requested.connect(_on_player_attack)
 	player.health_changed.connect(_on_player_health)
@@ -357,13 +363,14 @@ func _add_collision(parent: Node3D, shape_resource: Shape3D, y: float) -> void:
 	collision.position.y = y
 	parent.add_child(collision)
 
-func _add_capsule(parent: Node3D, at: Vector3, radius: float, height: float, color: Color) -> void:
+func _add_capsule(parent: Node3D, at: Vector3, radius: float, height: float, color: Color, rotation: Vector3 = Vector3.ZERO) -> void:
 	var visual := MeshInstance3D.new()
 	var mesh := CapsuleMesh.new()
 	mesh.radius = radius
 	mesh.height = height
 	visual.mesh = mesh
 	visual.position = at
+	visual.rotation_degrees = rotation
 	visual.material_override = _mat(color)
 	parent.add_child(visual)
 
@@ -397,7 +404,7 @@ func _add_horn(parent: Node3D, name: String, at: Vector3) -> void:
 	mesh.height = 1.35
 	visual.mesh = mesh
 	visual.position = at
-	visual.rotation_degrees.x = -90
+	visual.rotation_degrees.z = -28.0 if at.x < 0.0 else 28.0
 	visual.material_override = _mat(Color(0.23, 0.16, 0.14))
 	parent.add_child(visual)
 
