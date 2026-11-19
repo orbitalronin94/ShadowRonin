@@ -167,3 +167,126 @@ Cada nueva entrada debe incluir:
 - **Pendiente de verificar**, si todavía no hemos leído el código fuente correspondiente.
 
 No añadir una referencia solo porque el README prometa algo: localizar el archivo que implementa el sistema y anotar qué hemos comprobado. Mantener este único Markdown como índice y cuaderno central; no dispersar la investigación en documentos separados.
+
+---
+
+## 7. Segunda ronda: combate, sincronización y sistemas extensibles
+
+Esta ronda se ha contrastado con archivos de código concretos, no solo con los README.
+
+### Grim Delver — simulación de combate separada de la presentación
+
+- Repositorio: https://github.com/blackopsrepl/grim-delver
+- [README y arquitectura Godot + Rust](https://github.com/blackopsrepl/grim-delver/blob/main/README.md)
+- [model/combat.rs — resolución de ataques](https://github.com/blackopsrepl/grim-delver/blob/main/rust/src/model/combat.rs)
+- [game/combat.rs — efectos, audio y cámara](https://github.com/blackopsrepl/grim-delver/blob/main/rust/src/game/combat.rs)
+- [model/tests/combos.rs — pruebas de combos](https://github.com/blackopsrepl/grim-delver/blob/main/rust/src/model/tests/combos.rs)
+- [animation.rs — clips y animación](https://github.com/blackopsrepl/grim-delver/blob/main/rust/src/animation.rs)
+- **Observación:** el estado del juego conserva ataques pendientes. El momento de impacto se calcula usando la duración del clip y el fotograma de impacto definido por el perfil del arma. Cuando el tiempo cruza ese umbral, se resuelve el golpe. El informe resultante se convierte después en arco visual, sonido, destello, sacudida de cámara y avisos.
+- **Ideas aprovechables:** simulación independiente de efectos; perfil de ataque por arma; combos con multiplicadores propios; informe estructurado de combate; ataques de área con límite de objetivos y orden por distancia; pruebas deterministas de daño y progresión del combo.
+- **Diseño propio posible:** definir AttackDefinition, AttackRuntime y CombatEvent propios. La definición describe el movimiento; el runtime controla su ejecución temporal; el evento informa de un resultado ya resuelto.
+- **Estado:** demo ARPG compacta con bucle jugable para su alcance, no RPG de campaña extenso. Usa Godot para entrada/render/audio y Rust mediante GDExtension para la simulación. El renderer móvil documentado no demuestra por sí solo rendimiento en teléfonos.
+- **Licencia:** código MIT. Los assets de terceros tienen atribuciones y licencias separadas; consultar [ASSETS.md](https://github.com/blackopsrepl/grim-delver/blob/main/ASSETS.md).
+
+### Epoch — habilidades configurables y reglas extensibles
+
+- Repositorio: https://github.com/TimTmi/epoch
+- [README — descripción de arquitectura](https://github.com/TimTmi/epoch/blob/main/README.md)
+- [ability_system.gd — slots, activación y pasivas](https://github.com/TimTmi/epoch/blob/main/abilities/core/ability_system.gd)
+- [ability.gd — definición de habilidad](https://github.com/TimTmi/epoch/blob/main/abilities/core/ability.gd)
+- [ability_instance.gd — estado runtime](https://github.com/TimTmi/epoch/blob/main/abilities/core/ability_instance.gd)
+- [ability_context.gd — contexto de activación](https://github.com/TimTmi/epoch/blob/main/abilities/core/ability_context.gd)
+- [danger_sensor.gd — percepción de proyectiles](https://github.com/TimTmi/epoch/blob/main/character/input/ai/danger_sensor.gd)
+- [combat/ — reglas, contextos y efectos](https://github.com/TimTmi/epoch/tree/main/combat)
+- **Observación:** la configuración de una habilidad se separa de su instancia en ejecución. Cada personaje mantiene instancias propias con cooldown, carga, pasos y estado de pulsación. Las habilidades reciben un contexto que contiene usuario, intención, mundo y estado de instancia.
+- **Ideas aprovechables:** separar definición, instancia, intención y objetivo; admitir pulsación, mantener, cargar y soltar; usar contextos tipados para daño/curación/empuje/muerte; IA que evalúa la trayectoria de un proyectil y no solo su distancia.
+- **Diseño propio posible:** catálogo de habilidades declarativas, instancia aislada por actor, resolución de objetivos explícita y tubería de efectos con fases previas y posteriores.
+- **Estado:** sandbox de sistemas de combate en arena, no RPG de campaña. Renderiza con geometría y partículas en un viewport reducido.
+- **Licencia:** MIT según [LICENSE](https://github.com/TimTmi/epoch/blob/main/LICENSE). Los iconos externos conservan sus atribuciones.
+
+### Mistpaw — telegráficos, jefes y pruebas de legibilidad
+
+- Repositorio: https://github.com/Chuanyin1202/mistpaw
+- [boss_combat.gd — patrones, fases, guard break y recuperación](https://github.com/Chuanyin1202/mistpaw/blob/main/scripts/boss_combat.gd)
+- [enemy_telegraph.gd — zona y dirección anunciadas](https://github.com/Chuanyin1202/mistpaw/blob/main/scripts/enemy_telegraph.gd)
+- [combat_feedback.gd — audio, bloqueo, curación y cámara](https://github.com/Chuanyin1202/mistpaw/blob/main/scripts/combat_feedback.gd)
+- [touch_controls.gd — traducción multitáctil](https://github.com/Chuanyin1202/mistpaw/blob/main/scripts/touch_controls.gd)
+- [sword_arc.gdshader — estela de espada](https://github.com/Chuanyin1202/mistpaw/blob/main/shaders/sword_arc.gdshader)
+- [tests/combo.gd — sincronización de combos](https://github.com/Chuanyin1202/mistpaw/blob/main/tests/combo.gd)
+- [tests/boss_moves.gd — patrones del jefe](https://github.com/Chuanyin1202/mistpaw/blob/main/tests/boss_moves.gd)
+- [tests/combat_readability.gd — oclusión y legibilidad](https://github.com/Chuanyin1202/mistpaw/blob/main/tests/combat_readability.gd)
+- **Observación:** los ataques del jefe tienen preparación, zona anunciada, desplazamiento, impacto y recuperación. Las pruebas verifican que el aviso no daña, que el carril queda fijado, que la esquiva evita el ataque, que el golpe no se repite y que la segunda fase añade una onda que se puede saltar.
+- **Ideas aprovechables:** el telegráfico comparte geometría con el ataque real; patrones alternos evitan repetición; la recuperación crea una ventana de castigo; el feedback audiovisual tiene límites para no saturar; el input táctil traduce gestos a las mismas acciones abstractas; la silueta del jugador puede reforzarse si un enemigo lo tapa.
+- **Diseño propio posible:** director de encuentros por fases y patrones, telegráficos derivados de la misma definición que resuelve la colisión, y un canal audiovisual que escucha eventos de combate.
+- **Estado:** vertical slice de una arena/nivel, excelente laboratorio de combate pero no juego de campaña completo.
+- **Licencia:** código MIT; medios y assets con condiciones separadas. Consultar [ASSET_LICENSES.md](https://github.com/Chuanyin1202/mistpaw/blob/main/ASSET_LICENSES.md).
+
+### Emberpath — catálogo de contenido, progresión y validación
+
+- Repositorio: https://github.com/Cui-kolento/emberpath-idle-godot
+- [data_catalog.gd — héroes, equipo y habilidades](https://github.com/Cui-kolento/emberpath-idle-godot/blob/main/autoload/data_catalog.gd)
+- [skill_manager.gd — coste, alcance y cooldown](https://github.com/Cui-kolento/emberpath-idle-godot/blob/main/scripts/skill/skill_manager.gd)
+- [hit_box.gd](https://github.com/Cui-kolento/emberpath-idle-godot/blob/main/scripts/combat/hit_box.gd) y [hurt_box.gd](https://github.com/Cui-kolento/emberpath-idle-godot/blob/main/scripts/combat/hurt_box.gd)
+- [TEST_REPORT.md — 44 comprobaciones automatizadas](https://github.com/Cui-kolento/emberpath-idle-godot/blob/main/TEST_REPORT.md)
+- [tools/asset_pipeline — herramientas de recursos](https://github.com/Cui-kolento/emberpath-idle-godot/tree/main/tools/asset_pipeline)
+- **Observación:** héroes, equipo y habilidades están agrupados en un catálogo; el gestor valida nivel, distancia, maná y cooldown antes de emitir el lanzamiento. Hitbox y hurtbox son nodos distintos. El informe registra 44 comprobaciones sin fallos en Godot headless, incluyendo animaciones, daño, proyectiles, inventario y guardado/carga.
+- **Ideas aprovechables:** catálogo de contenido separado de la lógica; datos de equipo centralizados; pruebas de humo; validación de assets; normalización de anclajes de animación.
+- **Diseño propio posible:** esquema de datos validable para armas, enemigos, habilidades, equipo, botín y progresión, más herramientas que detecten referencias rotas y animaciones incompletas.
+- **Límite:** idle RPG de pixel art; su combate no representa el estilo de acción espectacular buscado. Los tests no demuestran rendimiento móvil.
+- **Licencias:** comprobar [LICENSE](https://github.com/Cui-kolento/emberpath-idle-godot/blob/main/LICENSE) y [ASSET_LICENSES.md](https://github.com/Cui-kolento/emberpath-idle-godot/blob/main/ASSET_LICENSES.md) antes de reutilizar nada.
+
+### Sentinel's Spire — FSM, solo como contraste
+
+- Repositorio: https://github.com/DaebenDev/Sentinels-Spire
+- [FiniteStateMachine.gd](https://github.com/DaebenDev/Sentinels-Spire/blob/main/scenes/enemies/Boss/FiniteStateMachine.gd)
+- [GolemBoss.gd](https://github.com/DaebenDev/Sentinels-Spire/blob/main/scenes/enemies/Boss/GolemBoss.gd)
+- **Qué aporta:** ejemplo pequeño de estados Idle, Follow, Attack, Hurt y Death, con rangos y estadísticas editables.
+- **Qué evitaríamos:** búsqueda del jugador por nombres/rutas alternativas, referencias manuales a estados y lógica demasiado acoplada al script del jefe.
+- **Estado técnico:** código de estilo Godot 3 (KinematicBody2D, yield y export), no base moderna Godot 4.
+- **Licencia:** no he encontrado un archivo LICENSE en la raíz consultada. Solo referencia de lectura; no copiar código ni assets hasta aclarar permisos.
+
+---
+
+## 8. Síntesis: arquitectura propia que empieza a emerger
+
+Esto no es una decisión de motor ni una selección definitiva. Es un mapa de módulos que aparece al comparar los proyectos:
+
+1. **World / Simulation:** estado del mundo y reglas deterministas; no dibuja ni reproduce audio.
+2. **Actor:** atributos, movimiento, equipo, salud y componentes especializados.
+3. **State machine:** locomoción, ataque, defensa, daño, aturdimiento y muerte; transiciones explícitas y comprobables.
+4. **Combat definitions:** perfiles de arma, combos, tiempos, alcance, forma del golpe, coste y ventanas de cancelación como datos.
+5. **Combat runtime:** instancia temporal que determina cuándo se abre y cierra la ventana de impacto.
+6. **Hit detection:** hitboxes/hurtboxes o consultas geométricas; filtros por equipo, altura, línea de visión e invulnerabilidad.
+7. **Combat events:** resultados estructurados como AttackStarted, HitConfirmed, Blocked, GuardBroken, ActorStaggered y ActorDefeated.
+8. **Presentation:** animación, partículas, shaders, sonido, cámara, vibración y UI escuchan eventos sin modificar reglas.
+9. **Encounter director:** fases, patrones, telegráficos y ventanas de castigo de jefes.
+10. **Ability system:** habilidades activas/pasivas con configuración separada del estado de ejecución.
+11. **Content catalog:** datos validados de armas, enemigos, botín, habilidades, equipo y progresión.
+12. **Input adapters:** teclado, mando y pantalla táctil producen las mismas acciones abstractas.
+13. **Verification:** pruebas de simulación, integración de escenas y capturas automatizadas de legibilidad audiovisual.
+
+### Principios que parecen sólidos
+
+- **Una sola fuente de verdad para el impacto:** animación, hitbox y sonido deben sincronizarse con el mismo evento o definición temporal, no con temporizadores independientes.
+- **La presentación no decide el daño:** el efecto visual comunica un resultado ya resuelto; no aplica daño por su cuenta.
+- **El jefe anuncia lo que realmente golpeará:** telegráfico y colisión comparten origen, dirección, alcance y duración.
+- **Ataques = datos + runtime:** el arma describe el ataque; el runtime ejecuta esa definición en el tiempo.
+- **Pruebas para la sensación:** además de HP, validar que no hay impacto prematuro, que la amenaza se entiende y que existe una ventana real de respuesta.
+- **Mobile-first:** luces, transparencias, partículas, memoria y resolución se consideran desde el principio, no al final.
+
+### Crear desde cero con código propio
+
+La meta no es ensamblar fragmentos ajenos. Vamos a extraer patrones, comparar alternativas y redactar especificaciones independientes. Cuando llegue el momento, implementaremos módulos propios con contratos, nombres, pruebas y estructura nuestros. Una licencia permisiva permite ciertos usos bajo condiciones, pero no hace recomendable copiar un sistema entero sin comprenderlo; y la licencia del código no autoriza automáticamente los assets.
+
+---
+
+## 9. Próxima tanda de investigación
+
+- Animación y combate 3D: rigs, root motion, blending, cancel windows, IK y sincronización de armas.
+- Cámara de acción: seguimiento, lock-on, encuadre de jefe, oclusión, sacudida limitada y recuperación suave.
+- Efectos móviles: shaders de impacto, trails, transparencias, sombras y partículas en renderer móvil.
+- IA: percepción, navegación, selección de ataques y coordinación de grupos.
+- Android real: builds reproducibles y pruebas en dispositivos físicos de distintas gamas.
+- Producción visual: pipeline de personajes, retargeting, importación de animaciones, LOD, atlas y compresión.
+
+La siguiente actualización debe seguir incorporando archivos concretos y hallazgos contrastados a este único documento. No abrir todavía carpetas de código, elegir motor ni iniciar un prototipo.
