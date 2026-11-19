@@ -9,7 +9,7 @@ signal defeated
 enum State { APPROACH, WINDUP, STRIKE, RECOVERY, DEAD }
 @export var max_health := 360
 var health := 360
-var player: CharacterBody3D
+var player: RoninController
 var state: State = State.APPROACH
 var timer := 0.0
 var cooldown := 1.0
