@@ -7,7 +7,7 @@ A dark-fantasy action game built around ten consecutive demon duels. The story i
 The first encounter is **Kuro, the Hound of the Threshold**. This prototype uses procedural placeholder geometry so combat timing, readability, camera, feedback and Android constraints can be tested before selecting final character and environment assets.
 
 ### Implemented scaffold
-- Third-person movement, attack and dodge.
+- Third-person movement, target lock-on, attack and dodge.
 - Dodge grants a short invulnerability window.
 - Kuro approaches, telegraphs an area strike, attacks and recovers; at half health he enters a faster, wider second phase.
 - Health bars, victory/defeat states and retry.
@@ -20,6 +20,7 @@ The first encounter is **Kuro, the Hound of the Threshold**. This prototype uses
 | Move | WASD |
 | Attack | J |
 | Dodge | Space |
+| Lock on | L |
 | Retry after encounter | R |
 
 Open the project root in **Godot 4.3+** and run the main scene. The initial target is Godot Mobile. Compatibility remains a fallback to benchmark on lower-end devices; the final renderer decision depends on physical Android tests.
