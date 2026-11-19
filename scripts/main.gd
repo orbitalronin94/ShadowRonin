@@ -136,6 +136,7 @@ func _build_fighters() -> void:
 	boss.health_changed.connect(_on_boss_health)
 	boss.telegraph_started.connect(_on_telegraph)
 	boss.attack_resolved.connect(_on_boss_attack)
+	boss.phase_changed.connect(_on_boss_phase)
 	boss.defeated.connect(_on_boss_defeated)
 
 func _build_camera() -> void:
@@ -281,6 +282,10 @@ func _on_telegraph(center: Vector3, radius: float) -> void:
 	var tween := create_tween()
 	tween.tween_property(telegraph_ring, "scale", Vector3.ONE * 1.15, 0.82)
 	tween.tween_callback(func(): telegraph_ring.visible = false)
+
+func _on_boss_phase() -> void:
+	camera_shake = 1.35
+	status_label.text = "KURO ENTRA EN FRENESÍ   ·   SU EMBESTIDA ES MÁS AMPLIA"
 
 func _on_boss_attack(hit: bool) -> void:
 	if hit:
