@@ -1,10 +1,7 @@
 extends Node3D
 
-const PLAYER_SCRIPT = preload("res://scripts/player_controller.gd")
-const BOSS_SCRIPT = preload("res://scripts/demon_boss.gd")
-
-var player: CharacterBody3D
-var boss: CharacterBody3D
+var player: RoninController
+var boss: KuroBoss
 var camera_rig: Node3D
 var camera: Camera3D
 var boss_bar: ProgressBar
