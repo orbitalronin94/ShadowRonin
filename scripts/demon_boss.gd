@@ -10,6 +10,7 @@ enum State { APPROACH, WINDUP, STRIKE, RECOVERY, DEAD }
 @export var max_health := 360
 var health := 360
 var player: RoninController
+var active := false
 var state: State = State.APPROACH
 var timer := 0.0
 var cooldown := 1.0
@@ -20,8 +21,11 @@ func _ready() -> void:
 	health = max_health
 	health_changed.emit(health, max_health)
 
+func begin_encounter() -> void:
+	active = true
+
 func _physics_process(delta: float) -> void:
-	if state == State.DEAD or not is_instance_valid(player):
+	if not active or state == State.DEAD or not is_instance_valid(player):
 		return
 	timer += delta
 	cooldown = maxf(0.0, cooldown - delta)
