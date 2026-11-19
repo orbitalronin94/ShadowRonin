@@ -12,6 +12,7 @@ var invulnerability_left := 0.0
 var attack_cooldown := 0.0
 var dodge_left := 0.0
 var touch_axis := Vector2.ZERO
+var controls_enabled := false
 var last_direction := Vector3.FORWARD
 
 func _ready() -> void:
@@ -19,6 +20,9 @@ func _ready() -> void:
 	health_changed.emit(health, max_health)
 
 func _physics_process(delta: float) -> void:
+	if not controls_enabled:
+		velocity = Vector3.ZERO
+		return
 	invulnerability_left = maxf(0.0, invulnerability_left - delta)
 	attack_cooldown = maxf(0.0, attack_cooldown - delta)
 	dodge_left = maxf(0.0, dodge_left - delta)
@@ -48,6 +52,9 @@ func _physics_process(delta: float) -> void:
 		perform_attack()
 	if Input.is_action_just_pressed("dodge"):
 		perform_dodge()
+
+func enable_controls() -> void:
+	controls_enabled = true
 
 func set_touch_axis(value: Vector2) -> void:
 	touch_axis = value
