@@ -1,17 +1,41 @@
-name: Godot validation
+name: Godot validation and Android APK
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
-  validate:
+  validate-and-export:
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
     steps:
       - uses: actions/checkout@v4
+
       - name: Import project and parse scripts
         run: godot --headless --editor --path . --quit
+
       - name: Boot main scene headlessly
         run: godot --headless --path . --quit-after 120
+
+      - name: Export Android debug APK
+        run: |
+          mkdir -p build
+          godot --headless --path . --export-debug "Android" build/ShadowRonin-debug.apk
+
+      - name: Verify APK
+        run: |
+          test -s build/ShadowRonin-debug.apk
+          file build/ShadowRonin-debug.apk
+          ls -lh build/ShadowRonin-debug.apk
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShadowRonin-Android-debug
+          path: build/ShadowRonin-debug.apk
+          if-no-files-found: error
+          retention-days: 14
