@@ -360,3 +360,141 @@ Estas tres referencias cubren capas distintas que no debemos confundir:
 
 Una arquitectura propia podría estudiar las tres sin adoptar su implementación literal. El resultado tendría que ser una única definición de ataque que coordine animación, desplazamiento, hitbox, cancelaciones y eventos audiovisuales.
 
+
+---
+
+## 11. Cuarta ronda: lock-on, cámara de combate y reacciones Souls-like
+
+### Souls-Like Controller — lock-on, combos y reacciones
+
+- Repositorio: https://github.com/Prashanna135/Souls-Like-Controller
+- [README — arquitectura y sistemas implementados](https://github.com/Prashanna135/Souls-Like-Controller/blob/main/README.md)
+- [player_lock_on.gd — selección y ciclo de objetivos](https://github.com/Prashanna135/Souls-Like-Controller/blob/main/scripts/player/player_lock_on.gd)
+- [camaramotion.gd — seguimiento y encuadre del objetivo](https://github.com/Prashanna135/Souls-Like-Controller/blob/main/scripts/camaramotion.gd)
+- [player_weapon.gd — buffer de combo y ventanas de hitbox](https://github.com/Prashanna135/Souls-Like-Controller/blob/main/scripts/player/player_weapon.gd)
+- [player_reaction.gd — stagger, knockdown y recuperación](https://github.com/Prashanna135/Souls-Like-Controller/blob/main/scripts/player/player_reaction.gd)
+- [enemy_ai.gd — percepción y estados del enemigo](https://github.com/Prashanna135/Souls-Like-Controller/blob/main/scripts/enemy/enemy_ai.gd)
+- [sword_hitbox.gd — contacto del arma](https://github.com/Prashanna135/Souls-Like-Controller/blob/main/scripts/sword_hitbox.gd)
+- **Observación de código:** el lock-on busca enemigos en un grupo, filtra por distancia, ordena candidatos y permite alternar objetivos. Limpia el objetivo si muere o desaparece. El marcador de objetivo y la cámara usan el mismo ancla del enemigo. La cámara limita el ángulo vertical, estabiliza el rumbo cuando el objetivo está casi alineado, y modifica el zoom cuando ambos personajes se acercan.
+- **Combate:** el siguiente golpe se puede almacenar mientras se ejecuta el actual; la máquina AnimationTree decide la transición entre tres ataques. El arma activa su hitbox durante estados concretos de animación y conserva el registro de objetivos golpeados por swing. Las reacciones distinguen daño ligero y pesado, interrumpen acciones incompatibles y enlazan derribo con levantarse.
+- **IA:** usa zonas de detección y punto ciego, patrulla, persecución y combate; alterna amagos de movimiento lateral, retirada y ataque. La histéresis evita que el enemigo oscile entre chase y combat al borde del rango.
+- **Ideas aprovechables:** target cycling; ancla común de cámara/retícula; zoom dinámico para mantener a los dos luchadores en cuadro; buffer de combos; una sola aplicación de daño por swing; stagger con interrupción; IA que cambia distancia y no solo persigue.
+- **Qué rediseñaríamos:** la estructura comparte estado mediante referencias al nodo raíz y nombres de propiedades; puede servir de referencia funcional, pero convendría diseñar contratos y recursos tipados más explícitos.
+- **Estado:** controlador de combate 3D con jugador y enemigo funcionales, no juego completo. El autor indica que depende de modelos y animaciones que no distribuye.
+- **Licencia:** no se encontró LICENSE en la raíz consultada. Tratar como referencia de lectura; no copiar código ni assets hasta aclarar permisos.
+
+### Godot Adaptive Camera Rig — cámara reutilizable con lock-on
+
+- Repositorio: https://github.com/DoctorArta/godot-adaptive-camera-rig
+- [adaptive_camera_rig.gd — rig, shoulder swap, lock-on y aim](https://github.com/DoctorArta/godot-adaptive-camera-rig/blob/main/addons/adaptive_camera_rig/adaptive_camera_rig.gd)
+- **Observación:** separa la posición lateral del hombro y la distancia al personaje en dos SpringArm3D; expone parámetros de suavizado, sensibilidad, zoom, FOV, ángulos y distancia de ruptura del lock-on.
+- **Ideas aprovechables:** cámara como sistema independiente del personaje; presets de encuadre; cambio de hombro; transiciones suaves de distancia y FOV; colisión con escenario mediante brazos independientes.
+- **Límite:** plugin de cámara, no juego ni sistema de combate. Hay que revisar el comportamiento real en arenas estrechas, varios enemigos, objetivos a distintas alturas y pantalla táctil.
+- **Licencia:** MIT según [LICENSE](https://github.com/DoctorArta/godot-adaptive-camera-rig/blob/main/LICENSE).
+
+---
+
+## 12. Quinta ronda: shaders y dirección visual con presupuesto Android
+
+### Godot Demo Projects — ejemplos oficiales de shaders y cámara
+
+- Repositorio: https://github.com/godotengine/godot-demo-projects
+- [outline.gdshader — contorno por muestreo de alfa](https://github.com/godotengine/godot-demo-projects/blob/master/2d/sprite_shaders/shaders/outline.gdshader)
+- [aura.gdshader — aura luminosa](https://github.com/godotengine/godot-demo-projects/blob/master/2d/sprite_shaders/shaders/aura.gdshader)
+- [dissintegrate.gdshader — desintegración procedural](https://github.com/godotengine/godot-demo-projects/blob/master/2d/sprite_shaders/shaders/dissintegrate.gdshader)
+- [vignette.gdshader — viñeta y blur por mipmaps](https://github.com/godotengine/godot-demo-projects/blob/master/2d/screen_space_shaders/shaders/vignette.gdshader)
+- [plasma.gdshader — plasma animado con ruido](https://github.com/godotengine/godot-demo-projects/blob/master/3d/procedural_materials/shaders/plasma.gdshader)
+- [skybox.gdshader — cielo desde panorama/cubemap](https://github.com/godotengine/godot-demo-projects/blob/master/3d/platformer/stage/skybox.gdshader)
+- [follow_camera.gd — seguimiento con límites de distancia y altura](https://github.com/godotengine/godot-demo-projects/blob/master/3d/kinematic_character/player/follow_camera.gd)
+- [occlusion_culling_mesh_lod/README.md — LOD y oclusión](https://github.com/godotengine/godot-demo-projects/blob/master/3d/occlusion_culling_mesh_lod/README.md)
+- **Qué extraer:** shaders pequeños y legibles que explican muestreo de alfa, aura, ruido, cubemaps y postprocesado; cámara con distancia/altura controladas; LOD automático y oclusión como técnicas que se deben medir por tipo de escenario.
+- **Advertencia:** son ejemplos educativos. No convertir un shader de ejemplo en un efecto de producción sin revisar número de texture reads, overdraw, resolución y compatibilidad del renderer. La demo de LOD indica que el beneficio de oclusión depende de la escena y que LOD puede ser más rentable que culling en muchos casos.
+
+### Kiln Shader Kit — biblioteca de efectos 2D, pantalla y 3D
+
+- Repositorio: https://github.com/jamespadgett/kiln-godot-shaders
+- [toon.gdshader — bandas de luz, sombras teñidas, rim light y especular](https://github.com/jamespadgett/kiln-godot-shaders/blob/main/shaders/3d/toon.gdshader)
+- [force_field.gdshader — escudo Fresnel, intersección y pulso](https://github.com/jamespadgett/kiln-godot-shaders/blob/main/shaders/3d/force_field.gdshader)
+- [water.gdshader — olas, profundidad y espuma de orilla](https://github.com/jamespadgett/kiln-godot-shaders/blob/main/shaders/3d/water.gdshader)
+- [dissolve_3d.gdshader — disolución de malla con borde emisivo](https://github.com/jamespadgett/kiln-godot-shaders/blob/main/shaders/3d/dissolve_3d.gdshader)
+- [hit_flash.gdshader — destello de daño](https://github.com/jamespadgett/kiln-godot-shaders/blob/main/shaders/2d/hit_flash.gdshader)
+- [shockwave.gdshader — onda expansiva en pantalla](https://github.com/jamespadgett/kiln-godot-shaders/blob/main/shaders/screen/shockwave.gdshader)
+- [README — catálogo y requisitos](https://github.com/jamespadgett/kiln-godot-shaders/blob/main/README.md)
+- **Observación:** el shader toon cuantiza la iluminación en bandas y añade rim light/especular duro; el escudo usa Fresnel, profundidad y bandas animadas; el agua calcula color según grosor y espuma cerca de geometría; dissolve descarta fragmentos según ruido y emite luz en el borde; shockwave distorsiona la textura de pantalla alrededor de un centro.
+- **Ideas aprovechables:** dirección artística estilizada; escudos de energía; agua poco profunda/profunda; desaparición de enemigos; hit flash; ondas de choque ligadas a impactos de jefe.
+- **Límite de validación:** el README declara pruebas en Godot 4.7 Forward+. Los shaders de agua y escudo leen depth buffer y el autor indica que requieren Mobile o Forward+ (no Compatibility), pero no presenta benchmark de Android físico. Hay que compilar y medirlos en nuestro dispositivo objetivo antes de adoptarlos.
+- **Licencia:** MIT para el código; medios de demostración bajo CC BY 4.0, según [LICENSE](https://github.com/jamespadgett/kiln-godot-shaders/blob/main/LICENSE).
+
+### GDQuest Godot Shaders — biblioteca de técnicas con demos
+
+- Repositorio: https://github.com/gdquest-demos/godot-shaders
+- [Repositorio y catálogo de shaders](https://github.com/gdquest-demos/godot-shaders)
+- **Técnicas anunciadas:** outline 3D, dissolve 3D, shockwave, fuego estilizado, toon avanzado, force field, nieve interactiva, cascadas, agua 2D, reflejos, nubes, x-ray y distorsión de pantalla.
+- **Qué estudiar:** comparar varias implementaciones para una misma tarea, observar la escena demo y aprender cómo se conectan los uniforms del shader con los parámetros de juego.
+- **Límite:** el README indica que parte del contenido está en proceso de actualización a Godot 4.3; comprobar la versión de cada shader antes de usarlo.
+- **Licencias:** el repositorio declara código MIT y recursos artísticos CC BY 4.0; comprobar créditos y archivos individuales.
+
+### Qué familias de shaders podrían dar personalidad visual
+
+No son decisiones artísticas todavía; son líneas de investigación que podemos combinar o descartar:
+
+1. **Material de personaje:** toon/PBR híbrido, sombras coloreadas, rim light selectivo, detalle de roughness y variación por material.
+2. **Impacto:** hit flash de duración muy corta, borde emisivo, distorsión radial localizada y partículas con dirección del golpe.
+3. **Armas:** estelas de espada, arcos de corte, trails con gradiente, brillo en el filo y afterimages temporales.
+4. **Defensa:** Fresnel, escudo con pulso, ondas de bloqueo, grietas emisivas al romper guardia.
+5. **Jefes:** disolución por fases, aura contextual, marcas de peligro en suelo y efectos ligados a telegráficos.
+6. **Entorno:** agua estilizada, cascadas, vegetación con vertex sway, cielo procedural/cubemap, niebla falsa por capas y decals.
+7. **Postprocesado:** color grading, viñeta discreta, shockwave y aberración cromática solo en eventos fuertes; no mantener distorsión constante.
+8. **Lectura de combate:** outline selectivo del objetivo, silueta reforzada cuando queda ocluido, indicador de lock-on y zonas de ataque de alto contraste.
+
+### Reglas de presupuesto gráfico para Android
+
+La documentación oficial de Godot insiste en que las GPU móviles suelen ser tile-based: el overdraw, las transparencias superpuestas, el coste de fragmentos y las lecturas de textura pueden penalizar mucho. En un shader móvil conviene empezar con pocas muestras, evitar transparencias enormes y medir cada efecto en resolución y dispositivo reales.
+
+- Priorizar geometría opaca frente a capas transparentes cuando el resultado sea equivalente.
+- Limitar partículas transparentes que se solapan sobre toda la pantalla.
+- Evitar varios shaders full-screen simultáneos; cada pase vuelve a procesar píxeles.
+- Reducir texture reads y evitar ruido procedural caro por píxel si basta con una textura precalculada.
+- Usar LOD de malla/material según distancia y tamaño en pantalla.
+- Reservar sombras dinámicas para luces y personajes que realmente las necesiten; combinar con iluminación horneada en escenarios.
+- Diseñar niveles con visibilidad y oclusión razonables, no confiar en culling para arreglar una escena mal organizada.
+- Probar ASTC/ETC2 y memoria de texturas por dispositivo; verificar formatos soportados en el parque objetivo.
+- Preparar variantes de calidad: baja, media y alta, sin cambiar las reglas visuales esenciales del combate.
+- Medir GPU time, CPU time, memoria, temperatura y estabilidad tras sesiones largas; un pico de FPS de diez segundos no es un benchmark móvil.
+
+**Fuentes técnicas oficiales para esta sección:**
+- [Godot — comparación de renderers y funciones disponibles](https://docs.godotengine.org/en/stable/tutorials/rendering/renderers.html)
+- [Godot — optimización GPU](https://docs.godotengine.org/en/4.3/tutorials/performance/gpu_optimization.html)
+- [Godot — arquitectura interna de renderizado móvil](https://docs.godotengine.org/en/4.5/engine_details/architecture/internal_rendering_architecture.html)
+
+### Diseño visual: no confundir espectacularidad con acumulación de efectos
+
+Un combate visualmente fuerte no necesita que todo brille a la vez. Debe existir jerarquía:
+
+- **Silueta:** el jugador, el arma y el jefe se reconocen en una fracción de segundo.
+- **Anticipación:** postura, sonido y señal visual anuncian la acción.
+- **Impacto:** un instante de contraste, reacción corporal y feedback sincronizado.
+- **Consecuencia:** empuje, stagger, daño, cambio de fase o destrucción del entorno.
+- **Recuperación:** el efecto se disipa y devuelve claridad a la escena.
+
+La dirección de arte debe reservar sus colores más luminosos y sus efectos más intensos para acciones con significado jugable. Si todo es espectacular, nada destaca.
+
+---
+
+## 13. Matriz provisional de investigación gráfica
+
+| Sistema | Referencia primaria | Qué medir o comprobar |
+|---|---|---|
+| Lock-on y selección | Souls-Like Controller | selección, ciclo, objetivo muerto, retícula ocluida |
+| Cámara de combate | Adaptive Camera Rig | clipping, suavizado, FOV, hombro, pantalla táctil |
+| Animación/combos | Souls-Like Controller + Locomotion Godot | buffer, cancelaciones, root motion, IK |
+| Toon shading | Kiln + GDQuest Shaders | bandas, rim, estabilidad con luces y coste |
+| Escudo y Fresnel | Kiln force_field | depth reads, transparencias, overdraw |
+| Agua y espuma | Kiln water | depth reads, coste por fragmento, plano subdividido |
+| Hit flash/dissolve | Kiln + Godot Demo Projects | sincronía, duración, muestras y emisión |
+| Shockwave | Kiln screen shader | coste full-screen y legibilidad |
+| Cielo y atmósfera | Godot Demo Projects | cubemap, gradientes y alternativas a volumetric fog |
+| LOD/occlusion | Godot Demo Projects | GPU/CPU time por tipo de nivel |
+| Android | renderer Mobile/Compatibility | compatibilidad real, FPS sostenido, memoria y temperatura |
+
+**Próximo paso de investigación:** revisar IA de jefes con patrones de ataque, animación de armas y root motion avanzado; después, estudiar un pipeline de personajes 3D (rig, retargeting, materiales, LOD y compresión) y comparar cómo se ve el mismo combate en Mobile y Compatibility. Mantener todo en este cuaderno único, sin empezar aún el proyecto jugable.
