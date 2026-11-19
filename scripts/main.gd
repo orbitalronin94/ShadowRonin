@@ -102,7 +102,6 @@ func _build_fighters() -> void:
 	player = RoninController.new()
 	player.name = "Ronin"
 	player.position = Vector3(0, 0.12, 5)
-	player.set_lock_target(boss)
 	add_child(player)
 	var pc := CapsuleShape3D.new()
 	pc.radius = 0.42
@@ -117,6 +116,7 @@ func _build_fighters() -> void:
 	boss.position = Vector3(0, 0.12, -5)
 	boss.set("player", player)
 	add_child(boss)
+	player.set_lock_target(boss)
 	var bc := CapsuleShape3D.new()
 	bc.radius = 0.82
 	bc.height = 2.25
