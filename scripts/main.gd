@@ -184,16 +184,16 @@ func _show_intro(parent: Control) -> void:
 	parent.add_child(intro_panel)
 	var heading := Label.new()
 	heading.text = "LOS DIEZ SELLOS"
-	heading.position = Vector2(0, -170)
 	heading.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	heading.position = Vector2(0, -170)
 	heading.add_theme_font_size_override("font_size", 38)
 	heading.add_theme_color_override("font_color", Color(0.95, 0.34, 0.2))
 	intro_panel.add_child(heading)
 	var lore := Label.new()
 	lore.text = "El Emperador compró la inmortalidad entregando su reino a diez demonios.\nCada uno recibió un sello y una parte de su alma. Los muertos ya no descansan.\n\nTú fuiste su verdugo. Intentaste romper el pacto y los demonios te mataron.\nAhora has regresado para recuperar tu alma y destruir los diez sellos.\n\nPRIMER UMBRAL: KURO, EL PERRO DEL UMBRAL."
+	lore.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	lore.position = Vector2(-360, -90)
 	lore.size = Vector2(720, 210)
-	lore.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	lore.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lore.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	lore.add_theme_font_size_override("font_size", 17)
@@ -202,8 +202,8 @@ func _show_intro(parent: Control) -> void:
 	var start := Button.new()
 	start.text = "CRUZAR EL UMBRAL"
 	start.size = Vector2(240, 58)
-	start.position = Vector2(-120, 150)
 	start.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	start.position = Vector2(-120, 150)
 	start.add_theme_font_size_override("font_size", 18)
 	start.pressed.connect(_start_encounter)
 	intro_panel.add_child(start)
@@ -298,15 +298,15 @@ func _finish(heading: String, subtitle: String) -> void:
 	canvas_layer.add_child(shade)
 	var title := Label.new()
 	title.text = heading
-	title.position = Vector2(0, -42)
 	title.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	title.position = Vector2(0, -42)
 	title.add_theme_font_size_override("font_size", 40)
 	title.add_theme_color_override("font_color", Color(0.95, 0.34, 0.2))
 	shade.add_child(title)
 	var detail := Label.new()
 	detail.text = subtitle + "\nPulsa R para volver a combatir."
-	detail.position = Vector2(0, 22)
 	detail.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	detail.position = Vector2(0, 22)
 	detail.add_theme_font_size_override("font_size", 19)
 	shade.add_child(detail)
 
