@@ -9,7 +9,7 @@ The first encounter is **Kuro, the Hound of the Threshold**. This prototype uses
 ### Implemented scaffold
 - Third-person movement, attack and dodge.
 - Dodge grants a short invulnerability window.
-- Kuro approaches, telegraphs an area strike, attacks and recovers.
+- Kuro approaches, telegraphs an area strike, attacks and recovers; at half health he enters a faster, wider second phase.
 - Health bars, victory/defeat states and retry.
 - Procedural arena, dark lighting, fog, emissive eyes and hit flash.
 - Keyboard controls and basic on-screen touch buttons.
