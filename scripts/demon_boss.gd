@@ -11,7 +11,7 @@ enum State { APPROACH, WINDUP, STRIKE, RECOVERY, DEAD }
 var health := 360
 var player: RoninController
 var active := false
-var state: State = State.APPROACH
+var state = State.APPROACH
 var timer := 0.0
 var cooldown := 1.0
 var strike_center := Vector3.ZERO
