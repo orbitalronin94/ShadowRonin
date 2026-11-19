@@ -498,3 +498,146 @@ La dirección de arte debe reservar sus colores más luminosos y sus efectos má
 | Android | renderer Mobile/Compatibility | compatibilidad real, FPS sostenido, memoria y temperatura |
 
 **Próximo paso de investigación:** revisar IA de jefes con patrones de ataque, animación de armas y root motion avanzado; después, estudiar un pipeline de personajes 3D (rig, retargeting, materiales, LOD y compresión) y comparar cómo se ve el mismo combate en Mobile y Compatibility. Mantener todo en este cuaderno único, sin empezar aún el proyecto jugable.
+
+
+---
+
+## 12. Gráficos de alta calidad en Android con Godot: referencias y emulación
+
+Esta ronda se centra en una pregunta concreta: cómo acercarse a una presentación visual de gama alta en un teléfono Android, qué proyectos sirven de referencia y cómo probarlo sin confundir una demo de PC/emulador con rendimiento móvil real.
+
+### 12.1 Referencia principal: Myra — calidad visual demostrada en un teléfono real
+
+- Artículo técnico: https://www.cgchannel.com/2022/05/check-out-photorealistic-real-time-godot-demo-myra/
+- Descarga de la demo: https://cybereality.itch.io/myra
+- **Evidencia publicada:** demo hecha con Godot 3.4.4, con un personaje escaneado renderizado en un entorno urbano; el autor reportó 90 FPS en un Google Pixel 5.
+- **Técnicas concretas:** modelo escaneado y optimizado en Blender/glTF; iluminación direccional alineada con el sol de la escena; Lightmap horneado en calidad Ultra con cinco rebotes; texturas originales de 8K reducidas según importancia (4K cielo, 2K personaje/puerta, 1K suelo); tonemapping ACES fitted y glow/bloom moderado.
+- **Lección:** una escena puede parecer mucho más cara de lo que cuesta en tiempo real si el entorno está bien horneado, las texturas tienen tamaños deliberados y el postprocesado se usa con contención.
+- **Límites:** es una escena estática, no un juego de acción con cámara, enemigos, animaciones, partículas y combate. Es Godot 3.4.4/GLES3, no una prueba directa del renderer Mobile/Vulkan de Godot 4 actual. Los 90 FPS son un dato reportado para ese caso, no una garantía transferible.
+- **Valor:** referencia de resultado visual móvil real, especialmente para materiales, iluminación y composición.
+
+### 12.2 Ashfall — diseño visual mobile-first, pero sin benchmark físico
+
+- Repositorio: https://github.com/GPTmadeit/ashfall
+- [CLAUDE.md — límites y presupuestos gráficos](https://github.com/GPTmadeit/ashfall/blob/main/CLAUDE.md)
+- [STORE_CHECKLIST.md — pruebas físicas pendientes](https://github.com/GPTmadeit/ashfall/blob/main/docs/STORE_CHECKLIST.md)
+- **Qué propone:** Godot 4.5+, Mobile Renderer/Vulkan, acción 2.5D dark fantasy; LightmapGI para geometría estática; probes para actores dinámicos; una luz direccional con sombras; MultiMesh para vegetación y props repetidos; atlas por bioma; alpha scissor en follaje; pooling de proyectiles y VFX.
+- **Trucos de apariencia:** sustituir volumetric fog por tarjetas/capas de niebla; simular AO en albedo/vertex color; hornear iluminación indirecta; limitar transparencias grandes; mantener un grade de color controlado; usar resolución dinámica para absorber caídas térmicas.
+- **Hallazgo crítico al leer su checklist:** el propio repositorio declara que las mediciones en dispositivo siguen pendientes: 60 FPS en gama media, 30 FPS mínimo en gama baja, prueba térmica de 20 minutos y coste de su lectura de profundidad para niebla. Además, los assets finales y buena parte de las animaciones siguen pendientes.
+- **Conclusión:** muy buen documento de restricciones y producción; no citar como juego Android probado ni como prueba de que sus objetivos de FPS se hayan alcanzado. Código y assets deben auditarse por separado.
+
+### 12.3 Graphics Settings Test — APK Android para comparar ajustes
+
+- Página y APK: https://stan-wick.itch.io/graphics-settings-test
+- **Qué es:** aplicación Android hecha con Godot, una sola escena y sin gameplay, destinada a enseñar y medir capacidades 3D; el APK listado pesa 56 MB.
+- **Utilidad:** referencia para diseñar una escena de benchmark con ajustes gráficos conmutables, FPS visible y cambios de calidad reproducibles.
+- **Límite:** prototipo de benchmark, con modelos/texturas simples; no demuestra el rendimiento de un ARPG cargado de combate.
+
+### 12.4 GTA-Mobile — referencia de sistemas de escena y opciones
+
+- Repositorio: https://github.com/ShivamKR12/GTA-Mobile
+- [README](https://github.com/ShivamKR12/GTA-Mobile/blob/main/README.md)
+- **Qué declara:** prototipo 3D para escritorio y móvil en Godot 4.4; personaje en tercera persona, armas, animaciones, vehículos, cámara dinámica, ciudad modular/procedural, ciclo día-noche, sombras configurables y shader de cielo; builds Android automatizadas.
+- **Qué conviene inspeccionar:** shader del cielo, shader de farolas, configuración de sombras, ciclo de iluminación, LOD/instanciación urbana y preset Android.
+- **Límite:** el README no aporta benchmark físico ni resultados de FPS/temperatura. Es prototipo, no un GTA completo. Revisar licencia y procedencia de assets antes de reutilizar.
+
+### 12.5 Godot 3D Showcase — receta de iluminación horneada
+
+- Repositorio: https://github.com/rishab247/godot-3d-showcase
+- [README](https://github.com/rishab247/godot-3d-showcase/blob/main/README.md)
+- **Receta declarada:** LightmapGI, ReflectionProbe estático, una direccional y pocas luces locales; sin GI dinámica, SSR, SSAO ni niebla volumétrica; AO incorporada en texturas; FXAA; límites explícitos de triángulos, memoria de texturas y sombras.
+- **Utilidad:** lista concreta de decisiones para una escena de showcase Android.
+- **Límite:** el README afirma Forward+ y Vulkan para Android, combinación que no debe tomarse como recomendación de producción: la documentación oficial actual recomienda Mobile o Compatibility para Android, y advierte que Forward+ en móvil está soportado pero poco optimizado. No se aporta prueba física independiente. La receta se toma como ideas de LightmapGI/reflections, no como configuración validada.
+
+### 12.6 Qué renderer usar y qué se puede emular
+
+La documentación oficial actual distingue tres renderers:
+
+- **Mobile (Vulkan):** opción inicial para Android moderno de gama media/alta; ofrece la mayor parte de las funciones avanzadas del motor con un coste pensado para escenas móviles.
+- **Compatibility (OpenGL):** alternativa para móviles antiguos o de gama baja y mayor cobertura; tiene menos funciones avanzadas.
+- **Forward+:** renderer de escritorio. Aunque puede arrancar en algunos móviles, Godot no lo recomienda para producción Android por su peor optimización en esa plataforma.
+
+Fuentes:
+- https://docs.godotengine.org/en/stable/tutorials/rendering/renderers.html
+- https://docs.godotengine.org/en/stable/about/system_requirements.html
+
+**Mobile sí permite** LightmapGI, ReflectionProbe, fog normal (no volumétrica), glow, decals, depth texture, partículas y postprocesado fullscreen/compositor con limitaciones de hardware. **Mobile no ofrece** SSR, SSAO/SSIL, SDFGI ni volumetric fog de Forward+. No intentar “activar” estos efectos de escritorio como si fueran gratuitos.
+
+La emulación visual recomendada consiste en reproducir la señal perceptiva, no la técnica cara original:
+
+| Efecto de gama alta que queremos sugerir | Sustituto móvil |
+|---|---|
+| Iluminación global dinámica | LightmapGI horneado + probes para personajes |
+| Oclusión ambiental de contacto | AO pintada/horneada en texturas y vertex colors; geometría de contacto bien diseñada |
+| Reflejos de entorno | ReflectionProbe estáticas/box-projected, materiales con roughness bien calibrada y reflejos pintados |
+| Niebla volumétrica | Fog por altura/distancia, planos de niebla, capas de partículas y conos de luz falsos |
+| Rayos de luz | Meshes/conos con shader suave y pocas capas transparentes; activar solo en planos de composición |
+| SSR en charcos/metal | ReflectionProbe, cubemaps o reflejos falsos específicos de material |
+| Desenfoque cinematográfico | DOF selectivo solo si el coste y la legibilidad lo permiten; preferir composición, profundidad por niebla y enfoque de cámara |
+| Sombras complejas | Una direccional con sombras, sombras horneadas y sombras blob/contacto baratas para actores |
+| Piel/translucencia | Material y textura preparados para sugerir volumen; reservar SSS real para hardware y renderer que lo soporten |
+| Explosiones y magia | Partículas breves, meshes de impacto, hit flash, shockwave de un solo pase y bloom moderado |
+
+La clave artística: siluetas claras, materiales coherentes, luz principal con dirección, contraste local, paleta limitada y efectos sincronizados con la acción. No llenar toda la pantalla de bloom, transparencias y partículas: se pierde legibilidad y se dispara el fill-rate.
+
+### 12.7 Texturas, memoria y coste de GPU
+
+- Android recomienda ASTC como formato primario moderno cuando el parque de dispositivos objetivo lo permite; ETC2 es el fallback de mayor cobertura. Las cifras publicadas por Android varían por fecha y parque, por lo que se deben comprobar capacidades reales del target.
+- ASTC permite elegir tamaño de bloque para equilibrar calidad y memoria; no asumir que el ajuste más agresivo será invisible en rostros, iconos o texturas con gradientes.
+- Usar mipmaps en texturas 3D que se ven a distintas distancias; limitar tamaños máximos según el tamaño en pantalla y la importancia narrativa.
+- Empaquetar ORM cuando sea útil (occlusion/roughness/metallic), compartir materiales y atlas por bioma, y evitar materiales únicos por objeto.
+- El coste móvil no es solo polígonos: transparencias solapadas, overdraw, fragment shaders con muchas lecturas de textura, sombras y cambios de estado pueden dominar.
+- Instanciar repetidos con MultiMesh; usar LOD y culling; limitar luces dinámicas y casters; evitar allocations por frame en escenas de combate.
+
+Fuentes:
+- https://developer.android.com/games/optimize/textures
+- https://docs.godotengine.org/en/stable/tutorials/performance/gpu_optimization.html
+
+### 12.8 Cómo emular Android y cómo probar de verdad
+
+Hay dos significados distintos de “emular”, y conviene no mezclarlos:
+
+**A. Emulador Android Studio (AVD):**
+- Sirve para comprobar instalación, arranque, orientación, interfaz, escalado, controles, ciclo de vida, permisos y compatibilidad básica.
+- La opción `-gpu host` permite al emulador usar la GPU del PC para acelerar el render; `auto` deja elegir al emulador. Eso no convierte la GPU del PC en una GPU móvil ni reproduce memoria compartida, drivers, ancho de banda o temperatura del teléfono.
+- Para Godot Mobile/Vulkan, el AVD no es una referencia fiable: el soporte/aceleración Vulkan puede ser incompleto o diferente según host, versión y backend. Compatibility/OpenGL puede servir para pruebas funcionales, pero tampoco sustituye el móvil.
+- No publicar números de FPS del AVD como si fueran números Android.
+
+**B. Dispositivo Android físico:**
+- Instalar el APK exportado con el mismo renderer y configuración que se pretende distribuir.
+- Conectar por USB y usar `scrcpy` para ver/controlar la pantalla desde el PC sin sustituir la GPU del teléfono.
+- Registrar modelo exacto, SoC/GPU, Android, renderer, resolución, calidad, temperatura ambiente, duración, FPS medio y percentiles, frame time CPU/GPU, memoria y temperatura del dispositivo.
+- Medir una escena ligera, una escena de exploración y el peor combate con jefe, partículas, sombras y varios enemigos.
+- Hacer una sesión térmica de 20 minutos o más: un pico de 60 FPS al inicio no prueba que se sostengan después del throttling.
+- Comparar perfiles de calidad con cambios aislados; no modificar simultáneamente resolución, sombras y efectos porque no se sabrá qué causó la mejora.
+
+Fuentes:
+- https://developer.android.com/studio/run/emulator-acceleration
+- https://github.com/godotengine/godot-proposals/issues/12231
+- https://developer.android.com/stories/games/godot-vulkan
+
+### 12.9 Prueba de concepto visual que merece la pena estudiar (sin iniciar desarrollo aún)
+
+Cuando llegue el momento de validar el estilo, preparar una escena de benchmark independiente y pequeña, no un nivel de juego. Debe contener:
+1. Un personaje de alta calidad con rig y materiales PBR/toon híbridos.
+2. Una arena con LightmapGI y ReflectionProbe.
+3. Una direccional con sombra y una luz local sin sombra.
+4. Niebla falsa por capas, partículas de polvo y un fondo con profundidad.
+5. Un enemigo animado y un ataque con estela, impacto, hit flash y shockwave.
+6. Un menú de calidad con resolución 3D, sombras, partículas, glow y distancia de dibujado.
+7. Contadores de FPS/frame time, memoria y renderer visible.
+
+El mismo contenido se compara en Mobile y Compatibility, primero en PC para detectar errores visuales y después en teléfonos físicos representativos. El objetivo no es construir ya el juego ni fijar el estilo: es averiguar qué combinación visual puede sostener Android de forma estable.
+
+### 12.10 Referencias oficiales y límites de evidencia
+
+- Godot renderer matrix: https://docs.godotengine.org/en/stable/tutorials/rendering/renderers.html
+- Godot system requirements: https://docs.godotengine.org/en/stable/about/system_requirements.html
+- Godot GPU optimization: https://docs.godotengine.org/en/stable/tutorials/performance/gpu_optimization.html
+- Android texture optimization: https://developer.android.com/games/optimize/textures
+- Android emulator GPU acceleration: https://developer.android.com/studio/run/emulator-acceleration
+- Godot + Google + The Forge Vulkan work: https://godotengine.org/article/update-on-google-forge-2024/
+
+Google y The Forge midieron dos escenas 3D en Pixel 7 y Samsung S23 y publicaron una reducción agregada del 10–20 % en tiempos de GPU tras sus optimizaciones Vulkan. Es evidencia útil de que el backend móvil importa, pero no predice el rendimiento de ShadowRonin ni de una escena distinta.
+
+**Conclusión provisional:** para perseguir el máximo aspecto visual razonable en Android, la ruta a investigar es Godot 4 Mobile/Vulkan, LightmapGI + probes, materiales y texturas optimizados, shaders de bajo coste y efectos cinematográficos falsificados. Compatibility debe mantenerse como perfil de cobertura si se decide soportar gama baja. El emulador sirve para flujo y compatibilidad; el rendimiento solo se acepta tras medir teléfonos físicos.
