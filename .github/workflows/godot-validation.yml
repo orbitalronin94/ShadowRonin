@@ -15,6 +15,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Configure Android export toolchain
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/lib/android-sdk}"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
+          export PATH="$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/cmdline-tools/bin:$ANDROID_HOME/platform-tools:$PATH"
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "JAVA_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME/bin" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/cmdline-tools/cmdline-tools/bin" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          java -version
+          sdkmanager --licenses </dev/null || true
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+
+          mkdir -p "$HOME/.android"
+          keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" \
+            -storepass android -alias androiddebugkey -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
+
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.3.stable"
+          curl -fsSL -o /tmp/godot-templates.tpz \
+            https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
+          mkdir -p /tmp/godot-templates
+          unzip -q /tmp/godot-templates.tpz -d /tmp/godot-templates
+          cp -a /tmp/godot-templates/templates/. "$HOME/.local/share/godot/export_templates/4.3.stable/"
+
       - name: Import project and parse scripts
         run: godot --headless --editor --path . --quit
 
@@ -22,7 +52,9 @@ jobs:
         run: godot --headless --path . --quit-after 120
 
       - name: Export Android debug APK
+        shell: bash
         run: |
+          set -euxo pipefail
           mkdir -p build
           godot --headless --path . --export-debug "Android" build/ShadowRonin-debug.apk
 
