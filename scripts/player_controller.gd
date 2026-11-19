@@ -1,4 +1,5 @@
 extends CharacterBody3D
+class_name RoninController
 
 signal attack_requested(origin: Vector3, forward: Vector3)
 signal health_changed(current: int, maximum: int)
