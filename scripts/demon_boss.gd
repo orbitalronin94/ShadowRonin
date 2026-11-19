@@ -1,4 +1,5 @@
 extends CharacterBody3D
+class_name KuroBoss
 
 signal health_changed(current: int, maximum: int)
 signal telegraph_started(center: Vector3, radius: float)
