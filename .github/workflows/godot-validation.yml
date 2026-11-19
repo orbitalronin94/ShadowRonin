@@ -15,12 +15,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Android SDK and Godot export templates
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/lib/android-sdk
+            ~/.android
+            ~/.local/share/godot/export_templates/4.3.stable
+          key: shadowronin-godot-4.3-android33-${{ runner.os }}-v1
       - name: Configure Android export toolchain
         shell: bash
         run: |
           set -euxo pipefail
-          apt-get update
-          apt-get install -y --no-install-recommends curl unzip
+          if ! command -v curl >/dev/null 2>&1 || ! command -v unzip >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y --no-install-recommends curl unzip
+          fi
           export ANDROID_HOME="${ANDROID_HOME:-/usr/lib/android-sdk}"
           export ANDROID_SDK_ROOT="$ANDROID_HOME"
           export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-17-openjdk-amd64}"
@@ -33,19 +43,31 @@ jobs:
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
           java -version
           yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          if [ ! -d "$ANDROID_HOME/platform-tools" ]; then
+            sdkmanager "platform-tools"
+          fi
+          if [ ! -d "$ANDROID_HOME/platforms/android-33" ]; then
+            sdkmanager "platforms;android-33"
+          fi
+          if [ ! -d "$ANDROID_HOME/build-tools/33.0.2" ]; then
+            sdkmanager "build-tools;33.0.2"
+          fi
 
           mkdir -p "$HOME/.android"
-          keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" \
-            -storepass android -alias androiddebugkey -keypass android \
-            -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
+          if [ ! -s "$HOME/.android/debug.keystore" ]; then
+            keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" \
+              -storepass android -alias androiddebugkey -keypass android \
+              -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
+          fi
 
-          mkdir -p "$HOME/.local/share/godot/export_templates/4.3.stable"
-          curl -fsSL -o /tmp/godot-templates.tpz \
-            https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
-          mkdir -p /tmp/godot-templates
-          unzip -q /tmp/godot-templates.tpz -d /tmp/godot-templates
-          cp -a /tmp/godot-templates/templates/. "$HOME/.local/share/godot/export_templates/4.3.stable/"
+          TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.3.stable"
+          if [ ! -s "$TEMPLATE_DIR/android_debug.apk" ] || [ ! -s "$TEMPLATE_DIR/android_release.apk" ]; then
+            mkdir -p "$TEMPLATE_DIR" /tmp/godot-templates
+            curl -fsSL -o /tmp/godot-templates.tpz \
+              https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz
+            unzip -q /tmp/godot-templates.tpz -d /tmp/godot-templates
+            cp -a /tmp/godot-templates/templates/. "$TEMPLATE_DIR/"
+          fi
 
       - name: Import project and parse scripts
         run: godot --headless --editor --path . --quit
