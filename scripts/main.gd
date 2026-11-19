@@ -8,6 +8,7 @@ var boss_bar: ProgressBar
 var player_bar: ProgressBar
 var status_label: Label
 var canvas_layer: CanvasLayer
+var intro_panel: ColorRect
 var telegraph_ring: MeshInstance3D
 var camera_shake := 0.0
 var ended := false
@@ -174,6 +175,44 @@ func _build_hud() -> void:
 	_touch_button(root, "▶", Vector2(144, -112), Vector2(52, 52), func(): player.set_touch_axis(Vector2(1, 0)), func(): player.set_touch_axis(Vector2.ZERO))
 	_touch_button(root, "▲", Vector2(87, -168), Vector2(52, 52), func(): player.set_touch_axis(Vector2(0, -1)), func(): player.set_touch_axis(Vector2.ZERO))
 	_touch_button(root, "▼", Vector2(87, -56), Vector2(52, 52), func(): player.set_touch_axis(Vector2(0, 1)), func(): player.set_touch_axis(Vector2.ZERO))
+	_show_intro(root)
+
+func _show_intro(parent: Control) -> void:
+	intro_panel = ColorRect.new()
+	intro_panel.color = Color(0.018, 0.008, 0.018, 0.94)
+	intro_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	parent.add_child(intro_panel)
+	var heading := Label.new()
+	heading.text = "LOS DIEZ SELLOS"
+	heading.position = Vector2(0, -170)
+	heading.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	heading.add_theme_font_size_override("font_size", 38)
+	heading.add_theme_color_override("font_color", Color(0.95, 0.34, 0.2))
+	intro_panel.add_child(heading)
+	var lore := Label.new()
+	lore.text = "El Emperador compró la inmortalidad entregando su reino a diez demonios.\nCada uno recibió un sello y una parte de su alma. Los muertos ya no descansan.\n\nTú fuiste su verdugo. Intentaste romper el pacto y los demonios te mataron.\nAhora has regresado para recuperar tu alma y destruir los diez sellos.\n\nPRIMER UMBRAL: KURO, EL PERRO DEL UMBRAL."
+	lore.position = Vector2(-360, -90)
+	lore.size = Vector2(720, 210)
+	lore.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	lore.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lore.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lore.add_theme_font_size_override("font_size", 17)
+	lore.add_theme_color_override("font_color", Color(0.86, 0.78, 0.74))
+	intro_panel.add_child(lore)
+	var start := Button.new()
+	start.text = "CRUZAR EL UMBRAL"
+	start.size = Vector2(240, 58)
+	start.position = Vector2(-120, 150)
+	start.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	start.add_theme_font_size_override("font_size", 18)
+	start.pressed.connect(_start_encounter)
+	intro_panel.add_child(start)
+
+func _start_encounter() -> void:
+	intro_panel.queue_free()
+	player.enable_controls()
+	boss.begin_encounter()
+	status_label.text = "KURO TE HA OLFATEADO   ·   PREPÁRATE"
 
 func _bar(parent: Control, at: Vector2, dimensions: Vector2, fill: Color) -> ProgressBar:
 	var bar := ProgressBar.new()
