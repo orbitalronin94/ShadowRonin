@@ -24,3 +24,4 @@ move_forward={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":8
 move_back={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":83)]}
 attack={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":74)]}
 dodge={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":32)]}
+lock_on={"deadzone":0.2,"events":[Object(InputEventKey,"physical_keycode":76)]}
