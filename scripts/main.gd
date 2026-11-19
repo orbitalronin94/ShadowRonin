@@ -22,9 +22,12 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if is_instance_valid(player) and is_instance_valid(boss) and not ended:
-		var desired := player.global_position + Vector3(0.0, 4.8, 9.0)
+		var focus := player.global_position
+		if player.lock_on and is_instance_valid(boss):
+			focus = (player.global_position + boss.global_position) * 0.5
+		var desired := focus + Vector3(0.0, 4.8, 9.0)
 		camera_rig.global_position = camera_rig.global_position.lerp(desired, 1.0 - exp(-4.5 * delta))
-		camera.look_at(player.global_position + Vector3.UP * 1.1, Vector3.UP)
+		camera.look_at(focus + Vector3.UP * 1.1, Vector3.UP)
 	if camera_shake > 0.0:
 		camera_shake = maxf(0.0, camera_shake - delta * 3.0)
 		camera.position.x = sin(Time.get_ticks_msec() * 0.05) * camera_shake * 0.18
@@ -99,6 +102,7 @@ func _build_fighters() -> void:
 	player = RoninController.new()
 	player.name = "Ronin"
 	player.position = Vector3(0, 0.12, 5)
+	player.set_lock_target(boss)
 	add_child(player)
 	var pc := CapsuleShape3D.new()
 	pc.radius = 0.42
@@ -172,12 +176,13 @@ func _build_hud() -> void:
 	player_bar = _bar(root, Vector2(32, 124), Vector2(230, 13), Color(0.75, 0.59, 0.43))
 	status_label = Label.new()
 	status_label.position = Vector2(32, 148)
-	status_label.text = "WASD mover   ·   J atacar   ·   ESPACIO esquivar"
+	status_label.text = "WASD mover   ·   J atacar   ·   ESPACIO esquivar   ·   L fijar"
 	status_label.add_theme_font_size_override("font_size", 15)
 	status_label.add_theme_color_override("font_color", Color(0.85, 0.78, 0.76))
 	root.add_child(status_label)
 	_touch_button(root, "GOLPE", Vector2(-164, -130), Vector2(128, 56), func(): player.perform_attack())
 	_touch_button(root, "ESQUIVA", Vector2(-164, -66), Vector2(128, 56), func(): player.perform_dodge())
+	_touch_button(root, "FIJAR", Vector2(-164, -194), Vector2(128, 56), func(): player.lock_on = not player.lock_on)
 	_touch_button(root, "◀", Vector2(30, -112), Vector2(52, 52), func(): player.set_touch_axis(Vector2(-1, 0)), func(): player.set_touch_axis(Vector2.ZERO))
 	_touch_button(root, "▶", Vector2(144, -112), Vector2(52, 52), func(): player.set_touch_axis(Vector2(1, 0)), func(): player.set_touch_axis(Vector2.ZERO))
 	_touch_button(root, "▲", Vector2(87, -168), Vector2(52, 52), func(): player.set_touch_axis(Vector2(0, -1)), func(): player.set_touch_axis(Vector2.ZERO))
