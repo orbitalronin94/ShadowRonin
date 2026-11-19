@@ -95,9 +95,8 @@ func _build_arena() -> void:
 	add_child(telegraph_ring)
 
 func _build_fighters() -> void:
-	player = CharacterBody3D.new()
+	player = RoninController.new()
 	player.name = "Ronin"
-	player.set_script(PLAYER_SCRIPT)
 	player.position = Vector3(0, 0.12, 5)
 	add_child(player)
 	var pc := CapsuleShape3D.new()
